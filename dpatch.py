@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/python
 
 import json
 import re
@@ -51,13 +51,22 @@ def getGitTicket():
 
 if __name__ == '__main__':
     import sys
-    if (len(sys.argv) == 1):
-          ticket = getGitTicket()
+
+    parent_branch = '';
+
+    for opt in sys.argv:
+        if opt[:8] == '--parent=':
+            parent_branch = opt[9:]
+
+    ticket = getGitTicket()
     # print ticket
     project = Issue(ticket)
-    parent_branch = project.getVersion()
+    if parent_branch == '':
+        parent_branch = project.getVersion()
     patch_filename = project.getPatchName()
     interdiff_filename = str(ticket) + '-' + str(project.getNextComment()) + '-interdiff.txt'
+    print 'git diff ' + parent_branch + ' > ' + patch_filename;
     subprocess.call('git diff ' + parent_branch + ' > ' + patch_filename, shell = True);
+    print 'git diff > ' + interdiff_filename;
     subprocess.call('git diff > ' + interdiff_filename, shell = True);
     subprocess.call('/usr/bin/open .', shell = True);
